@@ -1,0 +1,272 @@
+
+\newcommand{\Course}{Algorithmic {\footnotesize \Py}}
+\newcommand{\CourseTitle}{Algorithmic \Pytitle}
+\newcommand{\CourseName}{}
+\newcommand{\Year}{2014}
+\newcommand{\Semester}{Spring \Year}
+\newcommand{\Name}{Siyang Xie}
+
+
+
+%--------------------------------------------package import----------------------------------------------%
+
+\usepackage{caption}%
+\captionsetup{margin=8pt,font={rm}}
+
+\usepackage{../paul_tex_extra} % Some more detailed setting
+
+\usepackage{geometry}
+\geometry{
+        left=0.8in,
+        right=0.8in,
+        top=0.8in,
+        bottom=0.8in,
+        headsep=12pt,
+        footnotesep=10pt
+}
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphics}
+\usepackage[subfigure]{tocloft} 
+\usepackage{subfigure} 
+\usepackage{graphicx,multirow,bm,picinpar}%
+\usepackage[authoryear]{natbib}
+\usepackage{indentfirst}
+\usepackage{makecell}
+\usepackage{fancyhdr}
+\usepackage{ifthen}%
+\usepackage{lastpage}
+\usepackage{enumerate}
+\usepackage{color,xcolor}
+\usepackage[figuresright]{rotating}%
+\usepackage{booktabs,dcolumn,threeparttable}%
+\usepackage{pdfpages}
+
+\usepackage{paralist}%
+\plitemsep=8pt
+\defaultleftmargin{2.5em}{2.2em}{1.87em}{1.7em}
+
+\usepackage{etex}
+\newcolumntype{,}{D{,}{}{-1}}
+\newcolumntype{.}{D{.}{.}{-1}}
+\def\hed#1{\multicolumn{1}{c}{#1}}%
+
+%\usepackage{tikz,pgfplots}%
+%\usetikzlibrary{plotmarks}
+\usepackage{hyperref}
+\usepackage[affil-it]{authblk}
+
+\hypersetup{
+        pdfstartview={XYZ null null 1.00},
+        colorlinks,
+        citecolor=black,
+        filecolor=black,
+        linkcolor=black,
+        urlcolor=black,
+        pdfauthor = {Siyang Xie},
+        pdftitle = {Siyang Xie: Algorithmic Python},
+        pdfsubject = {Programming Note},
+}
+
+%--------------------------------------------package import----------------------------------------------%
+
+
+
+%----------------------------------------code listing settings-------------------------------------------%
+\usepackage{listings}
+\usepackage{courier}
+\usepackage[T1]{fontenc}
+
+\definecolor{dkgreen}{HTML}{D4a20b }%{0,0.6,0}
+\definecolor{gray}{rgb}{0.37, 0.08, 0.25}%{0.2,0.2,0.2}
+\definecolor{mauve}{HTML}{0A4980}%{0.58,0,0.82}
+\lstset{frame=tb,
+  language=Python,
+  backgroundcolor=\color{white},  % choose the background color;
+  basicstyle={\footnotesize\ttfamily},  % the size of the fonts that are used for the code
+  breaklines=true,
+  breakatwhitespace=true,
+  commentstyle={\itshape\color{dkgreen}},
+  escapeinside={\%*}{*)},  % if you want to add LaTeX within your code
+  extendedchars=true,  % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  keywordstyle={\bfseries\color{mauve}},
+  numbers=left, % where to put the line-numbers
+  stepnumber=1,  % the step between two line-numbers. If it's 1, each line will be numbered
+  numbersep=5pt, % distance of numbers of codes
+  numberstyle=\tiny\color{gray}, % size of the fonts used for the line-numbers
+  rulecolor=\color{black},  % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  aboveskip=4mm,
+  belowskip=4mm,
+  showstringspaces=false,
+  showtabs=true,    % show tabs within strings adding particular underscores
+  columns=flexible,
+  %numbers=none,
+  %numberstyle=\tiny\color{gray},
+  stringstyle=\color{mauve},
+  tabsize=4,
+  %title=\lstname,
+  morekeywords={as, plt},  
+}
+%----------------------------------------code listing settings-------------------------------------------%
+
+
+
+%---------------------------------------------TableofContents--------------------------------------------%
+\usepackage{titletoc}
+\usepackage{tocloft}
+\renewcommand\cftchapfont{\chapfont}
+\renewcommand\cftsecfont{\sffamily}
+\renewcommand\cftsubsecfont{\small\sffamily}
+\renewcommand\cftchappagefont{\large\bfseries}
+%\renewcommand\cftsecpagefont{\Large}
+\renewcommand\cftsubsecpagefont{\small}
+\renewcommand\cftchapafterpnum{\par\addvspace{3pt}}
+\renewcommand\cftsecafterpnum{\par\addvspace{0pt}}
+\renewcommand\cftsubsecafterpnum{\par\addvspace{-5pt}}
+\renewcommand\cftchappresnum{\chaptername\newline}
+\setlength{\cftchapnumwidth}{0.5cm}
+\setcounter{tocdepth}{2}
+
+%---------------content title---------------%
+\renewcommand{\cfttoctitlefont}{\LARGE\chapfont\color{black}}
+%\renewcommand{\cftaftertoctitle}{\hfill}
+%\renewcommand{\cftaftertoctitle}{%
+  %\\[\baselineskip]\mbox{}\hfill{\normalfont Page}}
+%\renewcommand{\cftaftertoctitle}{\thispagestyle{empty}}
+\setlength{\cftbeforetoctitleskip}{50pt}
+\setlength{\cftaftertoctitleskip}{30pt}
+
+%--------------- Typesetting with entries ------------%
+\renewcommand{\cftdot}{.} %\ensuremath{\ast}  {\cftdotsep}
+\renewcommand{\cftsecdotsep}{2} %{\cftnodots}
+\renewcommand{\cftsubsecdotsep}{2} %\renewcommand{\cftchapdotsep}{2}
+\renewcommand{\cftsecpresnum}{Chap}
+\renewcommand{\cftsecaftersnum}{:}
+\renewcommand{\cftsecaftersnumb}{\\}
+
+%----------------Hypelink---------------%
+\hypersetup{
+  colorlinks,
+  linkcolor=mauve % custom color
+}
+
+\makeatletter
+	\let\stdl@section\l@section
+    \renewcommand*{\l@section}[2]{%
+        \stdl@section{\textcolor{red}{#1}}{\textcolor{black}{#2}}}
+    \let\stdl@subsection\l@subsection
+    \renewcommand*{\l@subsection}[2]{%
+        \stdl@subsection{\textcolor{red}{#1}}{\textcolor{black}{#2}}}
+\makeatother
+
+%-------------------------------------------TableofContents---------------------------------------------%
+
+
+
+%------------------------------------------Sectional heading--------------------------------------------%
+%------------sectsty-------------%
+\usepackage{sectsty}
+\chapternumberfont{\Large\chapfont\raggedleft\sectionrule{0ex}{0pt}{-3ex}{0pt}}
+\chaptertitlefont{\color{mauve}\LARGE\thispagestyle{fancy}\chapfont\raggedleft\sectionrule{4ex}{0.8pt}{-3ex}{0.8pt}}
+\sectionfont{\color{mauve}\Large\sectfont}
+\subsectionfont{\color{mauve}\normalsize\sectfont}
+
+%------------fncychap-------------%
+%\usepackage[Sonny]{fncychap}
+%\ChNameVar{\Large\chapfont} 
+%\ChNumVar{\huge\chapfont}
+%\ChTitleVar{\LARGE\chapfont\color{mauve}}
+%\ChRuleWidth{0.8pt}
+%\ChNameAsIs 
+
+%-------------------------------------------Sectional heading--------------------------------------------%
+
+
+
+%-------------------------------------------------math---------------------------------------------------%
+
+%\numberwithin{equation}{section}
+
+%-------------------------------------------------math---------------------------------------------------%
+
+
+
+%---------------------------------------------predefinition----------------------------------------------%
+
+\def\nd{\noindent}
+\def\nn{\nonumber}
+\def\wv{$\scriptsize{\sim}$}
+\newcommand{\grad}{\ensuremath{^{\circ}}}% degree
+
+%---------------------------------------------predefinition----------------------------------------------%
+
+
+
+%------------------------------------------tables and figures--------------------------------------------%
+
+\renewcommand\figurename{\bf Fig}
+\renewcommand\tablename{\bf Table}
+
+\newcommand\tref[1]{{\bf Table~\ref{#1}}}
+\newcommand\fref[1]{{\bf Fig~\ref{#1}}}
+
+\setlength{\abovecaptionskip}{6pt}
+\setlength{\belowcaptionskip}{6pt}
+\renewcommand{\baselinestretch}{1.2}
+\renewcommand{\arraystretch}{.8}
+%\setlength{\parskip}{0pt}
+
+%------------------------------------------tables and figures--------------------------------------------%
+
+
+
+%-----------------------------------------headers and footers--------------------------------------------%
+
+%-------definition of headers and footers--------%
+\newboolean{first}%
+\setboolean{first}{true}%
+
+%-----------body-----------%
+\makeatletter
+\newcommand*{\currentchapter}{\@currentlabelname}
+\makeatother
+
+\usepackage{ifthen}
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{ \markboth{#1}{} }
+\fancyhf{}
+\fancyhead[R]{ \ifthenelse{\isodd{\value{page}}}{\small \sffamily \Course}{}}
+\fancyhead[L]{\ifthenelse{\isodd{\value{page}}}{}{\small \sffamily \Course}}
+\fancyfoot[L]{\ifthenelse{\isodd{\value{page}}}{\footnotesize\sffamily Chapter \thechapter: \nouppercase{\leftmark}}{}}
+\fancyfoot[C]{\small\sffamily \thepage}
+\fancyfoot[R]{\ifthenelse{\isodd{\value{page}}}{}{\footnotesize\sffamily Section \nouppercase{\rightmark}}}
+
+%--------------first page----------------%
+\fancypagestyle{plain}{%
+\setboolean{first}{false}%
+\lhead{}
+\chead{}
+\rhead{\small\sffamily \Course}
+\lfoot{}
+\cfoot{\small\sffamily  \thepage}
+\rfoot{\scriptsize\sffamily \today}
+}
+
+\newcommand{\makefirstpageheadrule}{% double lines
+\makebox[0pt][l]{\rule[0.55\baselineskip]{\headwidth}{0.9pt}}%
+%\rule[0.8\baselineskip]{\headwidth}{0.4pt}
+}
+
+\newcommand{\makeheadrule}{% single line
+\rule[0.8\baselineskip]{\headwidth}{0.4pt}}
+
+\renewcommand{\headrule}{%redefine header
+\ifthenelse{\boolean{first}}{\makeheadrule}{\makefirstpageheadrule}%
+}%
+
+%-------------------------------------------headers and footers-------------------------------------------%
+
+
+
+%-------------------------environment--------------------------------
+
