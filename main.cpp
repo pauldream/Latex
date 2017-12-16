@@ -14,7 +14,6 @@
 #include <cmath>
 #include <math.h>
 #include <queue>
-#include <functional>
 #include <time.h>
 ILOSTLBEGIN
 
@@ -29,14 +28,19 @@ typedef IloArray<IloNumD2> IloNumD3;
 typedef IloArray<IloNumD3> IloNumD4;
 
 #define PI 3.14159265
+//const int NUM_CUS = 14;
+//const int NUM_FAC = 15;
+//const int NUM_STA = 26;
+//const int NUM_LEVEL = 20; 
+//const float PENAL = 1000;	 //demand loss penalty
 const int NUM_CUS = 19;
-const int NUM_FAC = 19 + 1;
-const int NUM_STA = 31 + 0 + 1;
-const int NUM_LEVEL = 15 + 0 + 1;
+const int NUM_FAC = 20;
+const int NUM_STA = 31 + 1;
+const int NUM_LEVEL = 15;
 const int Num_Iteration = 20;
-const float PENAL = 1000.0;	 //demand loss penalty
+const float PENAL = 3000.0;	 //demand loss penalty
 const int Count_Tree_Lim = 1200;//was 200000
-const float timeLimit = 60;// 86400;
+const float timeLimit = 1800;// 86400;
 const float greedyZ_U = 2000000;
 
 
@@ -44,12 +48,14 @@ const float greedyZ_U = 2000000;
 const float nu = 1.5f;		//step size control in LR*/
 const float INFSMALL=0.000000001;
 const int isHungarian=0;
-float prob[NUM_STA] = {};
 float fixed_cost[NUM_FAC] = {};
 float demand[NUM_CUS] = {};
+float prob[NUM_STA]= {};
 double lon[NUM_CUS] = {};
 double lat[NUM_CUS] = {};
 double beta[NUM_LEVEL] = { 1.0 }; // , 0.4, 0.1777, 0.0889, 0.0444, 0.0222, 0.011158, 0.0068, 0.004254, 0.002658, 0.00166, 0.001038, 0.00068, 0.000455, 0.0003};// {1, 0.12, 0.0192, 0.003072};
+vector<vector<int>> JAss;
+vector<vector<int>> KAss;
 
 int Count_Tree=0;
 float Z_U_Global=IloInfinity;
@@ -81,7 +87,7 @@ struct ANode{
 	int parent;
 };
 
-priority_queue<BBNode,vector<BBNode>, greater<BBNode> > Live_queue;
+priority_queue<BBNode,vector<BBNode>,greater<BBNode> > Live_queue;
 
 
 // Function definition
@@ -131,13 +137,11 @@ int main (int argc, char **argv)
 		lat[count] = line_component[2] * PI / 180.0;
 		count++;
 	}
-
 	for (int k = 0; k<NUM_STA-1; k++)
 	{
 		prob[k] = 0.0;
 	}
 	prob[NUM_STA - 1] = 0.0;
-	
 	vector<vector<int>> link;
 	link.resize(NUM_FAC);
 	for (int j = 0; j<NUM_FAC; j++) {
@@ -147,7 +151,6 @@ int main (int argc, char **argv)
 		}
 	}
 	link[NUM_FAC - 1][NUM_STA - 1] = 1;
-	
 	vector<vector<vector<float>>> distance;
 	distance.resize(NUM_STA);
 	for (int k = 0; k < NUM_STA; k++) {
@@ -167,14 +170,13 @@ int main (int argc, char **argv)
 			if (c < -1)
 				c = -1;
 			for (int k = 0; k < NUM_STA; k++) {
-				distance[k][i][j] = floor(3959 * acos(c) + 0.5);
+				distance[k][i][j] = 3959 * acos(c);
 			}
 		}
 	}
 	for (int i = 0; i<NUM_CUS; i++) {
 		distance[NUM_STA - 1][i][NUM_FAC - 1] = PENAL;
 	}
-
 
 	// [14-node example]
 	/*prob[0] = 0.5000;  prob[1] = 0.5000;  prob[2] = 0.8696;  prob[3] = 0.6250;  prob[4] = 0.9946;  prob[5] = 0.6250;  prob[6] = 0.9946;  prob[7] = 0.9758; prob[8] = 0.6100;
@@ -190,6 +192,7 @@ int main (int argc, char **argv)
 	link[10][18] = 1; link[11][18] = 1; link[12][18] = 1; link[13][18] = 1; link[9][19] = 1; link[9][20] = 1; link[13][20] = 1;
 	link[9][21] = 1; link[12][21] = 1; link[13][21] = 1; link[9][22] = 1; link[11][22] = 1; link[12][22] = 1; link[13][22] = 1;
 	link[9][23] = 1; link[10][23] = 1; link[9][24] = 1; link[10][24] = 1; link[11][24] = 1; link[12][24] = 1; link[13][24] = 1;*/
+
 
 	// [14-node 3 local]
 	/*for (int j = 0; j < NUM_FAC; j++) {
@@ -236,9 +239,7 @@ int main (int argc, char **argv)
 
 	// [19-node 4 local]
 	/*for (int j = 0; j < NUM_FAC; j++) {
-		link[j][j] = 1;
-		if(j < NUM_FAC - 1)
-			prob[j] = 0.05 + (j%4)*0.05;
+	link[j][j] = 1;
 	}*/
 	prob[0] = 0.4286;  prob[1] = 0.6364;  prob[2] = 0.6364;  prob[3] = 0.8643;  prob[4] = 0.8000;  prob[5] = 0.5000;
 	prob[6] = 0.5000;  prob[7] = 0.5000;  prob[8] = 0.8696;  prob[9] = 0.6250;  prob[10] = 0.9946;  prob[11] = 0.6250;  
@@ -262,115 +263,111 @@ int main (int argc, char **argv)
 	link[14][28] = 1; link[16][28] = 1; link[17][28] = 1; link[18][28] = 1; 
 	link[14][29] = 1; link[15][29] = 1; 
 	link[14][30] = 1; link[15][30] = 1; link[16][30] = 1; link[17][30] = 1; link[18][30] = 1;
-	
+
 	// [25-node 4 local]
 	/*for (int j = 0; j < NUM_FAC; j++) {
-		link[j][j] = 1;
-	}*/	
-	//prob[0] = 0.4286;  prob[1] = 0.6364;  prob[2] = 0.6364;  prob[3] = 0.8643;  prob[4] = 0.8000;  prob[5] = 0.5000;
-	//prob[6] = 0.5000;  prob[7] = 0.5000;  prob[8] = 0.8696;  prob[9] = 0.6250;  prob[10] = 0.9946;  prob[11] = 0.6250;
-	//prob[12] = 0.9946;  prob[13] = 0.9758; prob[14] = 0.6100;
-	//prob[15] = 0.4000;  prob[16] = 0.4444; prob[17] = 0.9783; prob[18] = 0.6970; prob[19] = 0.6571; prob[20] = 0.5022;
-	//prob[21] = 0.5000; prob[22] = 0.6250; prob[23] = 0.6667; prob[24] = 0.7059; prob[25] = 0.6250; prob[26] = 0.8889;
-	//prob[27] = 0.9600; prob[28] = 0.9783; prob[29] = 0.6667; prob[30] = 0.9775;
-	//for (int k = 31; k < NUM_STA - 1; k++) {
-	//	prob[k] = 0.0000;
-	//}
-	//prob[NUM_STA - 1] = 0.0000;
-	//link[0][0] = 1; link[0][1] = 1; link[2][1] = 1; link[0][2] = 1; link[1][2] = 1; link[0][3] = 1; link[1][3] = 1;
-	//link[2][3] = 1; link[0][4] = 1; link[1][4] = 1; link[2][4] = 1; link[3][4] = 1; link[0][5] = 1; link[1][5] = 1;
-	//link[2][5] = 1; link[3][5] = 1; link[4][5] = 1; // local 1
-	//link[10][6] = 1; link[11][7] = 1; link[10][8] = 1; link[11][8] = 1; link[9][9] = 1; link[11][9] = 1; link[9][10] = 1;
-	//link[10][10] = 1; link[11][10] = 1; link[8][11] = 1; link[10][11] = 1; link[8][12] = 1; link[10][12] = 1; link[11][12] = 1;
-	//link[8][13] = 1; link[9][13] = 1; link[10][13] = 1; link[11][13] = 1;
-	//link[7][14] = 1; link[8][14] = 1; link[9][14] = 1; link[10][14] = 1; link[11][14] = 1; // local 2
-	//link[14][15] = 1; link[13][16] = 1; link[13][17] = 1; link[14][17] = 1; link[13][18] = 1; link[14][18] = 1; link[15][18] = 1;
-	//link[12][19] = 1; link[13][19] = 1; link[14][19] = 1; link[12][20] = 1; link[13][20] = 1; link[14][20] = 1; link[15][20] = 1; // local 3
-	//link[24][21] = 1; link[23][22] = 1; link[24][22] = 1; link[22][23] = 1; link[23][23] = 1; link[24][23] = 1;
-	//link[21][24] = 1; link[22][24] = 1; link[23][24] = 1; link[24][24] = 1; link[20][25] = 1; link[20][26] = 1;
-	//link[24][26] = 1; link[20][27] = 1; link[23][27] = 1; link[24][27] = 1;
-	//link[20][28] = 1; link[22][28] = 1; link[23][28] = 1; link[24][28] = 1;
-	//link[20][29] = 1; link[21][29] = 1;
-	//link[20][30] = 1; link[21][30] = 1; link[22][30] = 1; link[23][30] = 1; link[24][30] = 1; // local 4
-	//link[5][31] = 1; link[6][32] = 1; link[16][33] = 1; link[17][34] = 1; link[18][35] = 1; link[19][36] = 1; // other locations
-	
+	link[j][j] = 1;
+	}*/
+	/*prob[0] = 0.4286;  prob[1] = 0.6364;  prob[2] = 0.6364;  prob[3] = 0.8643;  prob[4] = 0.8000;  prob[5] = 0.5000;
+	prob[6] = 0.5000;  prob[7] = 0.5000;  prob[8] = 0.8696;  prob[9] = 0.6250;  prob[10] = 0.9946;  prob[11] = 0.6250;
+	prob[12] = 0.9946;  prob[13] = 0.9758; prob[14] = 0.6100;
+	prob[15] = 0.4000;  prob[16] = 0.4444; prob[17] = 0.9783; prob[18] = 0.6970; prob[19] = 0.6571; prob[20] = 0.5022;
+	prob[21] = 0.5000; prob[22] = 0.6250; prob[23] = 0.6667; prob[24] = 0.7059; prob[25] = 0.6250; prob[26] = 0.8889;
+	prob[27] = 0.9600; prob[28] = 0.9783; prob[29] = 0.6667; prob[30] = 0.9775;
+	for (int k = 31; k < NUM_STA - 1; k++) {
+		prob[k] = 0.1500;
+	}
+	prob[NUM_STA - 1] = 0.0000;
+	link[0][0] = 1; link[0][1] = 1; link[2][1] = 1; link[0][2] = 1; link[1][2] = 1; link[0][3] = 1; link[1][3] = 1;
+	link[2][3] = 1; link[0][4] = 1; link[1][4] = 1; link[2][4] = 1; link[3][4] = 1; link[0][5] = 1; link[1][5] = 1;
+	link[2][5] = 1; link[3][5] = 1; link[4][5] = 1;
+	link[10][6] = 1; link[11][7] = 1; link[10][8] = 1; link[11][8] = 1; link[9][9] = 1; link[11][9] = 1; link[9][10] = 1;
+	link[10][10] = 1; link[11][10] = 1; link[8][11] = 1; link[10][11] = 1; link[8][12] = 1; link[10][12] = 1; link[11][12] = 1;
+	link[8][13] = 1; link[9][13] = 1; link[10][13] = 1; link[11][13] = 1;
+	link[7][14] = 1; link[8][14] = 1; link[9][14] = 1; link[10][14] = 1; link[11][14] = 1;
+	link[14][15] = 1; link[13][16] = 1; link[13][17] = 1; link[14][17] = 1; link[13][18] = 1; link[14][18] = 1; link[15][18] = 1;
+	link[12][19] = 1; link[13][19] = 1; link[14][19] = 1; link[12][20] = 1; link[13][20] = 1; link[14][20] = 1; link[15][20] = 1;
+	link[24][21] = 1; link[23][22] = 1; link[24][22] = 1; link[22][23] = 1; link[23][23] = 1; link[24][23] = 1;
+	link[21][24] = 1; link[22][24] = 1; link[23][24] = 1; link[24][24] = 1; link[20][25] = 1; link[20][26] = 1;
+	link[24][26] = 1; link[20][27] = 1; link[23][27] = 1; link[24][27] = 1;
+	link[20][28] = 1; link[22][28] = 1; link[23][28] = 1; link[24][28] = 1;
+	link[20][29] = 1; link[21][29] = 1;
+	link[20][30] = 1; link[21][30] = 1; link[22][30] = 1; link[23][30] = 1; link[24][30] = 1;
+
+	link[5][31] = 1; link[6][32] = 1; link[16][33] = 1; link[17][34] = 1; link[18][35] = 1; link[19][36] = 1;*/
 
 	// [49-node 8 local]
 	/*for (int j = 0; j < NUM_FAC; j++) {
 		link[j][j] = 1;
-	}
-	float lonNO = 89.93136 * PI / 180.0;
-	float latNO = 30.06585 * PI / 180.0;
-	double distance_temp[NUM_FAC - 1] = {};
+	}*/
+	/*float lonNO = 89.931355 * PI / 180.0;   
+	float latNO = 30.065846 * PI / 180.0;
 	for (int j = 0; j < NUM_FAC - 1; j++) {
 		double c = sin(latNO) * sin(lat[j]) + cos(latNO) * cos(lat[j]) * cos(-lonNO + lon[j]);
 		if (c > 1)
 			c = 1;
 		if (c < -1)
 			c = -1;
-		distance_temp[j] = floor(3959 * acos(c) + 0.5);
-		prob[j] = 0.1 * exp(-1.0 * distance_temp[j] / 500.0);
+		prob[j] = 0.1 * exp(-3959 * acos(c) / 400.0);
 	}*/
-	/*
-	// local 1
-	prob[0] = 0.4000;  prob[1] = 0.5556;  prob[2] = 0.4000;  prob[3] = 0.9615;  prob[4] = 1.0636;  prob[5] = 0.5556;
-	prob[6] = 1.0636;  prob[7] = 1.0062; prob[8] = 0.8222; prob[9] = 0.8222;  prob[10] = 0.5473; 
-	link[6][0] = 1; link[5][1] = 1; link[6][1] = 1; link[4][2] = 1; link[4][3] = 1; link[6][3] = 1; link[4][4] = 1; 
-	link[5][4] = 1; link[6][4] = 1; link[3][5] = 1; link[4][5] = 1; link[3][6] = 1; link[4][6] = 1; link[6][6] = 1;
-	link[3][7] = 1; link[4][7] = 1; link[5][7] = 1; link[6][7] = 1; link[2][8] = 1; link[3][8] = 1; link[4][8] = 1;
-	link[5][8] = 1; link[6][8] = 1; link[1][9] = 1; link[3][9] = 1; link[4][9] = 1; link[5][9] = 1; link[6][9] = 1;
-	link[1][10] = 1; link[2][10] = 1; link[3][10] = 1; link[4][10] = 1; link[5][10] = 1; link[6][10] = 1;
-	// local 2
-	prob[11] = 0.4286; prob[12] = 0.6364; prob[13] = 0.6364; prob[14] = 0.8643; prob[15] = 0.8000; prob[16] = 0.5000;
-	link[7][11] = 1; link[7][12] = 1; link[9][12] = 1; link[7][13] = 1; link[8][13] = 1; link[7][14] = 1; link[8][14] = 1;
-	link[9][14] = 1; link[7][15] = 1; link[8][15] = 1; link[9][15] = 1; link[10][15] = 1; link[7][16] = 1; link[8][16] = 1;
-	link[9][16] = 1; link[10][16] = 1; link[11][16] = 1;
-	// local 3
-	prob[17] = 0.5000; prob[18] = 0.5000; prob[19] = 0.8696; prob[20] = 0.6250; prob[21] = 0.9946; prob[22] = 0.6250;
-	prob[23] = 0.9946; prob[24] = 0.9758; prob[25] = 0.6100; 
-	link[17][17] = 1; link[18][18] = 1; link[17][19] = 1; link[18][19] = 1; link[16][20] = 1; link[18][20] = 1; 
-	link[16][21] = 1; link[17][21] = 1; link[18][21] = 1; link[15][22] = 1; link[17][22] = 1; link[15][23] = 1; 
-	link[17][23] = 1; link[18][23] = 1; link[15][24] = 1; link[16][24] = 1; link[17][24] = 1; link[18][24] = 1;
-	link[14][25] = 1; link[15][25] = 1; link[16][25] = 1; link[17][25] = 1; link[18][25] = 1;
-	// local 4
-	prob[26] = 0.4000; prob[27] = 0.4444; prob[28] = 0.9783; prob[29] = 0.6970; prob[30] = 0.6571; prob[31] = 0.5022;
-	link[21][26] = 1; link[20][27] = 1; link[20][28] = 1; link[21][28] = 1; link[20][29] = 1; link[21][29] = 1; 
-	link[22][29] = 1; link[19][30] = 1; link[20][30] = 1; link[21][30] = 1; link[19][31] = 1; link[20][31] = 1; 
-	link[21][31] = 1; link[22][31] = 1;
-	// local 5
-	prob[32] = 0.5000; prob[33] = 0.6250; prob[34] = 0.6667; prob[35] = 0.7059; prob[36] = 0.6250; prob[37] = 0.8889;
-	prob[38] = 0.9600; prob[39] = 0.9783; prob[40] = 0.6667; prob[41] = 0.9775;
-	link[31][32] = 1; link[30][33] = 1; link[31][33] = 1; link[29][34] = 1; link[30][34] = 1; link[31][34] = 1;
-	link[28][35] = 1; link[29][35] = 1; link[30][35] = 1; link[31][35] = 1; link[27][36] = 1; link[27][37] = 1;
-	link[31][37] = 1; link[27][38] = 1; link[30][38] = 1; link[31][38] = 1;
-	link[27][39] = 1; link[29][39] = 1; link[30][39] = 1; link[31][39] = 1;
-	link[27][40] = 1; link[28][40] = 1;
-	link[27][41] = 1; link[28][41] = 1; link[29][41] = 1; link[30][41] = 1; link[31][41] = 1;
-	// local 6
-	prob[42] = 0.4000; prob[43] = 0.5556; prob[44] = 0.6429; prob[45] = 0.4444; prob[46] = 1.0714; prob[47] = 1.0216;
-	prob[48] = 0.6429; prob[49] = 1.0208; prob[50] = 0.7368; prob[51] = 1.1903;
-	link[35][42] = 1; link[34][43] = 1; link[35][43] = 1; link[33][44] = 1; link[34][44] = 1; link[35][44] = 1;
-	link[32][45] = 1; link[32][46] = 1; link[35][46] = 1; link[32][47] = 1; link[34][47] = 1; link[35][47] = 1;
-	link[32][48] = 1; link[33][48] = 1; link[32][49] = 1; link[33][49] = 1; link[35][49] = 1;
-	link[32][50] = 1; link[33][50] = 1; link[34][50] = 1;
-	link[32][51] = 1; link[33][51] = 1; link[34][51] = 1; link[35][51] = 1;
-	// local 7
-	prob[52] = 0.5000; prob[53] = 0.5000; prob[54] = 0.4000;
-	link[38][52] = 1; link[39][53] = 1; link[38][54] = 1; link[39][54] = 1;
-	// local 8
-	prob[55] = 0.5000; prob[56] = 0.5000; prob[57] = 0.3333; prob[58] = 0.8000; prob[59] = 0.8000; prob[60] = 0.9375;
-	link[45][55] = 1; link[45][56] = 1; link[46][56] = 1; link[47][57] = 1; link[48][57] = 1;
-	link[45][58] = 1; link[46][58] = 1; link[47][58] = 1; link[45][59] = 1; link[46][59] = 1; link[48][59] = 1;
-	link[45][60] = 1; link[46][60] = 1; link[47][60] = 1; link[48][60] = 1;
+	//// local 1
+	//prob[0] = 0.4000;  prob[1] = 0.5556;  prob[2] = 0.4000;  prob[3] = 0.9615;  prob[4] = 1.0636;  prob[5] = 0.5556;
+	//prob[6] = 1.0636;  prob[7] = 1.0062; prob[8] = 0.8222; prob[9] = 0.8222;  prob[10] = 0.5473; 
+	//link[6][0] = 1; link[5][1] = 1; link[6][1] = 1; link[4][2] = 1; link[4][3] = 1; link[6][3] = 1; link[4][4] = 1; 
+	//link[5][4] = 1; link[6][4] = 1; link[3][5] = 1; link[4][5] = 1; link[3][6] = 1; link[4][6] = 1; link[6][6] = 1;
+	//link[3][7] = 1; link[4][7] = 1; link[5][7] = 1; link[6][7] = 1; link[2][8] = 1; link[3][8] = 1; link[4][8] = 1;
+	//link[5][8] = 1; link[6][8] = 1; link[1][9] = 1; link[3][9] = 1; link[4][9] = 1; link[5][9] = 1; link[6][9] = 1;
+	//link[1][10] = 1; link[2][10] = 1; link[3][10] = 1; link[4][10] = 1; link[5][10] = 1; link[6][10] = 1;
+	//// local 2
+	//prob[11] = 0.4286; prob[12] = 0.6364; prob[13] = 0.6364; prob[14] = 0.8643; prob[15] = 0.8000; prob[16] = 0.5000;
+	//link[7][11] = 1; link[7][12] = 1; link[9][12] = 1; link[7][13] = 1; link[8][13] = 1; link[7][14] = 1; link[8][14] = 1;
+	//link[9][14] = 1; link[7][15] = 1; link[8][15] = 1; link[9][15] = 1; link[10][15] = 1; link[7][16] = 1; link[8][16] = 1;
+	//link[9][16] = 1; link[10][16] = 1; link[11][16] = 1;
+	//// local 3
+	//prob[17] = 0.5000; prob[18] = 0.5000; prob[19] = 0.8696; prob[20] = 0.6250; prob[21] = 0.9946; prob[22] = 0.6250;
+	//prob[23] = 0.9946; prob[24] = 0.9758; prob[25] = 0.6100; 
+	//link[17][17] = 1; link[18][18] = 1; link[17][19] = 1; link[18][19] = 1; link[16][20] = 1; link[18][20] = 1; 
+	//link[16][21] = 1; link[17][21] = 1; link[18][21] = 1; link[15][22] = 1; link[17][22] = 1; link[15][23] = 1; 
+	//link[17][23] = 1; link[18][23] = 1; link[15][24] = 1; link[16][24] = 1; link[17][24] = 1; link[18][24] = 1;
+	//link[14][25] = 1; link[15][25] = 1; link[16][25] = 1; link[17][25] = 1; link[18][25] = 1;
+	//// local 4
+	//prob[26] = 0.4000; prob[27] = 0.4444; prob[28] = 0.9783; prob[29] = 0.6970; prob[30] = 0.6571; prob[31] = 0.5022;
+	//link[21][26] = 1; link[20][27] = 1; link[20][28] = 1; link[21][28] = 1; link[20][29] = 1; link[21][29] = 1; 
+	//link[22][29] = 1; link[19][30] = 1; link[20][30] = 1; link[21][30] = 1; link[19][31] = 1; link[20][31] = 1; 
+	//link[21][31] = 1; link[22][31] = 1;
+	//// local 5
+	//prob[32] = 0.5000; prob[33] = 0.6250; prob[34] = 0.6667; prob[35] = 0.7059; prob[36] = 0.6250; prob[37] = 0.8889;
+	//prob[38] = 0.9600; prob[39] = 0.9783; prob[40] = 0.6667; prob[41] = 0.9775;
+	//link[31][32] = 1; link[30][33] = 1; link[31][33] = 1; link[29][34] = 1; link[30][34] = 1; link[31][34] = 1;
+	//link[28][35] = 1; link[29][35] = 1; link[30][35] = 1; link[31][35] = 1; link[27][36] = 1; link[27][37] = 1;
+	//link[31][37] = 1; link[27][38] = 1; link[30][38] = 1; link[31][38] = 1;
+	//link[27][39] = 1; link[29][39] = 1; link[30][39] = 1; link[31][39] = 1;
+	//link[27][40] = 1; link[28][40] = 1;
+	//link[27][41] = 1; link[28][41] = 1; link[29][41] = 1; link[30][41] = 1; link[31][41] = 1;
+	//// local 6
+	//prob[42] = 0.4000; prob[43] = 0.5556; prob[44] = 0.6429; prob[45] = 0.4444; prob[46] = 1.0714; prob[47] = 1.0216;
+	//prob[48] = 0.6429; prob[49] = 1.0208; prob[50] = 0.7368; prob[51] = 1.1903;
+	//link[35][42] = 1; link[34][43] = 1; link[35][43] = 1; link[33][44] = 1; link[34][44] = 1; link[35][44] = 1;
+	//link[32][45] = 1; link[32][46] = 1; link[35][46] = 1; link[32][47] = 1; link[34][47] = 1; link[35][47] = 1;
+	//link[32][48] = 1; link[33][48] = 1; link[32][49] = 1; link[33][49] = 1; link[35][49] = 1;
+	//link[32][50] = 1; link[33][50] = 1; link[34][50] = 1;
+	//link[32][51] = 1; link[33][51] = 1; link[34][51] = 1; link[35][51] = 1;
+	//// local 7
+	//prob[52] = 0.5000; prob[53] = 0.5000; prob[54] = 0.4000;
+	//link[38][52] = 1; link[39][53] = 1; link[38][54] = 1; link[39][54] = 1;
+	//// local 8
+	//prob[55] = 0.5000; prob[56] = 0.5000; prob[57] = 0.3333; prob[58] = 0.8000; prob[59] = 0.8000; prob[60] = 0.9375;
+	//link[45][55] = 1; link[45][56] = 1; link[46][56] = 1; link[47][57] = 1; link[48][57] = 1;
+	//link[45][58] = 1; link[46][58] = 1; link[47][58] = 1; link[45][59] = 1; link[46][59] = 1; link[48][59] = 1;
+	//link[45][60] = 1; link[46][60] = 1; link[47][60] = 1; link[48][60] = 1;
 
-	for (int k = 61; k < NUM_STA - 1; k++) {
-		prob[k] = 0.1000;
-	}
-	prob[NUM_STA - 1] = 0.0000;
-	link[0][61] = 1; link[12][62] = 1; link[13][63] = 1; link[23][64] = 1; link[24][65] = 1;
-	link[25][66] = 1; link[36][67] = 1; link[37][68] = 1; link[40][69] = 1; link[41][70] = 1; 
-	link[42][71] = 1; link[43][72] = 1; link[44][73] = 1;
-	*/
+	//for (int k = 61; k < NUM_STA - 1; k++) {
+	//	prob[k] = 0.1000;
+	//}
+	//prob[NUM_STA - 1] = 0.0000;
+	//link[0][61] = 1; link[12][62] = 1; link[13][63] = 1; link[23][64] = 1; link[24][65] = 1;
+	//link[25][66] = 1; link[36][67] = 1; link[37][68] = 1; link[40][69] = 1; link[41][70] = 1; 
+	//link[42][71] = 1; link[43][72] = 1; link[44][73] = 1;
 
 	// [49-node simple]
 	/*for (int j = 0; j < NUM_FAC; j++) {
@@ -420,11 +417,10 @@ int main (int argc, char **argv)
 		prob[j] = 0.1 * exp(-distance[0][j][23] / 400.0);
 	}*/
 
-
-	// calculate lower approximation of [beta_r]
+	// calculate lower approximation [beta]
 	const int c = 31;
 	float probtemp[c] = {};
-	for (int i = 0; i < c; ++i) {
+	for (int i = 0; i < c; i++) {
 		probtemp[i] = prob[i];
 	}
 	for (int i = 0; i < c - 1; ++i) {
@@ -436,17 +432,17 @@ int main (int argc, char **argv)
 			}
 		}
 	}
-	for (int r = 1; r < NUM_LEVEL; ++r) {
+	for (int r = 1; r < NUM_LEVEL; r++) {
 		beta[r] = beta[r - 1] * probtemp[r - 1];
 		cout << beta[r - 1] << " * " << probtemp[r-1] << " = " << beta[r] << endl;
 	}
 
-	// cout << "NUM_LEVEL = " << NUM_LEVEL <<". Fixcost = "<<fixed_cost[0]<<". Network: "<<NUM_LENGTH<<"x"<<NUM_LENGTH<<"."<<endl;
+	//cout << "NUM_LEVEL = " << NUM_LEVEL <<". Fixcost = "<<fixed_cost[0]<<". Network: "<<NUM_LENGTH<<"x"<<NUM_LENGTH<<"."<<endl;
 	for(int j=0;j<NUM_FAC;j++) 
 		x_opt[j]=0;
 	x_opt[NUM_FAC-1]=1;
 
-	// order the distance for each i and level r, and define JAss and KAss
+	// order the distance for each i and level r
 	int i,j,k,r;
 	float *** d_copy=new float **[NUM_CUS];
 	for (i = 0; i < NUM_CUS; i++) {
@@ -459,13 +455,12 @@ int main (int argc, char **argv)
 		}
 	}
 
-	vector<vector<int>> JAss;
-	vector<vector<int>> KAss;
-	JAss.resize(NUM_CUS);
-	KAss.resize(NUM_CUS);
+	// define JAss and KAss
 	float temp_d;
 	int temp_j, temp_k;
-	for (i = 0; i < NUM_CUS; i++)
+	JAss.resize(NUM_CUS);
+	KAss.resize(NUM_CUS);
+	for(i=0;i<NUM_CUS;i++) 
 	{
 		JAss[i].clear();
 		KAss[i].clear();
@@ -482,22 +477,37 @@ int main (int argc, char **argv)
 					}
 				}
 			}
-			if (temp_j == -1 || d_copy[i][temp_j][temp_k] >= PENAL) { // if the current facility is worse than the emergency one
+			if (temp_j==-1 || d_copy[i][temp_j][temp_k] >= PENAL) {
 				break;
 			}
 			JAss[i].push_back(temp_j);
 			KAss[i].push_back(temp_k);
 			d_copy[i][temp_j][temp_k] = numeric_limits<float>::infinity();//a station can only serve one level
 		}
-		JAss[i].push_back(NUM_FAC - 1);
-		KAss[i].push_back(NUM_STA - 1);
+		JAss[i].push_back(NUM_FAC-1);
+		KAss[i].push_back(NUM_STA-1);
+			
+		#if _DEBUG
+		if(1){
+		//vector<int>::const_iterator iter;
+		//vector<int>::const_iterator Kiter;
+			int tt=0;
+			cout<<"JAss[i].size()="<<JAss[i].size()<<endl;
+		for(tt=0;tt<JAss[i].size();tt++) {cout<<JAss[i][tt]<<"&"<<KAss[i][tt]<<": "<<distance[KAss[i][tt]][i][JAss[i][tt]]<<" ";}
+		cout<<endl;
+		}
+		if(0){
+		vector<int>::iterator iter;
+		for(iter=JAss[i].begin();iter<JAss[i].end();iter++) {cout<<*iter<<": "<<distance[*iter][i]<<" ";}
+		cout<<endl;
+		}
+		#endif
 	}
 	for (i = 0; i < NUM_CUS; i++) {
 		delete[] d_copy[i];
 	}
 	delete[] d_copy;
 	
-
 	try {
 		beginTime = (float)clock();
 		SolveBB(distance, link, JAss, KAss, 1); // isBreadth = 1
@@ -530,10 +540,10 @@ void SolveBB(const vector<vector<vector<float>>> &distance, const vector<vector<
 	float BBTime;
 	float Z_D_new, Z_U_new;
 
-	// initialize multiplies
+	//initialize multiplies
 	Z_U_new = greedyZ_U;
 	Z_D_new = -numeric_limits<float>::infinity();
-	float *** mu = new float ** [NUM_CUS];  //define lagrangian multiplier
+	float***mu = new float **[NUM_CUS];  //define lagrangian multiplier
 	for (i = 0; i < NUM_CUS; i++) {				 //initialize 
 		mu[i] = new float *[NUM_FAC - 1];
 		for (j = 0; j < NUM_FAC - 1; j++) {
@@ -553,7 +563,7 @@ void SolveBB(const vector<vector<vector<float>>> &distance, const vector<vector<
 		}
 	}
 
-	SolveLR(distance, link, JAss, KAss, X, Z_D_new, Z_U_new, mu, X_fixed, X_mask, 2000, 1.0, 1.02f);	//was 2000 for the large case// lambda was 1.0
+	SolveLR(distance, link, JAss, KAss, X, Z_D_new, Z_U_new, mu, X_fixed, X_mask, 4000, 1.0, 1.02f);	//was 2000 for the large case// lambda was 1.0
 
 	float temp = Z_U_Global = Z_U_new;
 	Z_D_Global = Z_D_new;
@@ -591,16 +601,16 @@ void SolveBB(const vector<vector<vector<float>>> &distance, const vector<vector<
 	else {
 		BBNode thisBBNode;
 		thisBBNode.muS = new float **[NUM_CUS];
-		for (i = 0; i < NUM_CUS; i++) {				 //initialize 
+		for (i = 0; i<NUM_CUS; i++) {				 //initialize 
 			thisBBNode.muS[i] = new float *[NUM_FAC - 1];
-			for (j = 0; j < NUM_FAC - 1; j++) {
+			for (j = 0; j<NUM_FAC - 1; j++) {
 				num_path = 0;
-				for (k = 0; k < NUM_STA - 1; k++)
+				for (k = 0; k<NUM_STA - 1; k++)
 					if (link[j][k])
 						num_path++;
 				thisBBNode.muS[i][j] = new float[num_path];
 				l = 0;
-				for (k = 0; k < NUM_STA - 1; k++) {
+				for (k = 0; k<NUM_STA - 1; k++) {
 					if (link[j][k]) {
 						thisBBNode.muS[i][j][l] = mu[i][j][k];
 						l++;
@@ -635,7 +645,7 @@ void SolveBB(const vector<vector<vector<float>>> &distance, const vector<vector<
 			}
 
 			BBNode node_temp = Live_queue.top();
-			BBBFS(distance, link, JAss, KAss, X, mu, Live_queue.top()); //Live_queue.top()
+			BBBFS(distance, link, JAss, KAss, X, mu, node_temp);//Live_queue.top()
 
 			for (i = 0; i<NUM_CUS; i++) {
 				for (j = 0; j<NUM_FAC - 1; j++) 
@@ -725,7 +735,7 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 	}
 
 
-	// LR procedure
+	//LR
 	int Count = 0; //IsCount
 	int Count_1 = 0;
 	int convergenceCount = 0;//DownCount=0, IsDownCount, 
@@ -733,7 +743,7 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 	float den, num, tk;
 	//for(j=0;j<J;j++) {Count_mask+=X_mask[j];Count_fixed+=X_fixed[j]*X_mask[j];}
 
-	for (int Iteration = 0; Iteration < IterNum; Iteration++) {
+	for (int Iteration = 0; Iteration<IterNum; Iteration++) {
 		// lower bound
 		Z_D = 0;
 		//contribution of X
@@ -760,8 +770,13 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 			}
 		}
 
+		/*//calculate the obj of the second sub problem in LR and the obj value is cost_sub2
+		float cost_LB2,UB_sub2;
+		Sub_Problem(distance,link,mu,X_fixed,X_mask,Y,cost_LB2,UB_sub2);
+		Z_D+=cost_LB2;*/
+
 		//contribution of Y
-		for (i = 0; i < NUM_CUS; i++) {
+		for (i = 0; i<NUM_CUS; i++) {
 			if (!isHungarian) {//not using hungarian //!isHungarian
 				for (r = 0; r < NUM_LEVEL - 1; r++) {
 					for (j = 0; j < NUM_FAC; j++) {
@@ -773,15 +788,17 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 								{
 									coef_Y[j][k][r] = demand[i] * distance[k][i][j] * (1 - prob[k])*beta[r];
 								}
+								//{coef_Y[j][k][r]=demand[i]*distance[k][i][j]*beta[r]; }
 								if ((!X_fixed[j]) && (!X_mask[j]))
 								{
 									coef_Y[j][k][r] = demand[i] * distance[k][i][j] * (1 - prob[k])*beta[r] + mu[i][j][k];
 								}
+								//{coef_Y[j][k][r]=demand[i]*distance[k][i][j]*beta[r]+mu[i][j][k];}
 							}
 						}
 					}
 				}
-				coef_Y[NUM_FAC - 1][NUM_STA - 1][NUM_LEVEL - 1] = demand[i] * PENAL * beta[NUM_LEVEL - 1];
+				coef_Y[NUM_FAC - 1][NUM_STA - 1][NUM_LEVEL - 1] = demand[i] * PENAL*beta[NUM_LEVEL - 1];
 				temp_k = temp_j = -1;
 
 				//find the lowest cost coefficient for each Yijkr
@@ -790,13 +807,12 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 					for (k = 0; k < NUM_STA - 1; k++) {
 						flag = 0;
 						for (int r1 = 0; r1 < r; r1++) {
-							if (k == min_Kindex[r1]) {
-								flag = 1; 
-								break;
+							if (k == min_Kindex[r1]) { 
+								flag = 1; break; 
 							} //a station can only serve one level
 						}
 						if (flag) continue;
-						for (j = 0; j < NUM_FAC - 1; j++) {
+						for (j = 0; j < NUM_FAC - 1; j++){
 							if (link[j][k]) {
 								if (min_coef_X[r] > coef_Y[j][k][r]) {
 									min_coef_X[r] = coef_Y[j][k][r];
@@ -819,19 +835,18 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 				r_temp = 0;
 				for (r = 0; r < NUM_LEVEL; r++)
 				{
-					if (temp_sum > temp1 + demand[i] * PENAL * beta[r]) {
-						temp_sum = temp1 + demand[i] * PENAL * beta[r];
+					if (temp_sum > temp1 + demand[i] * PENAL*beta[r]) {
+						temp_sum = temp1 + demand[i] * PENAL*beta[r];
 						r_temp = r;
 					}
 					//else {break;}
-					if (r < NUM_LEVEL - 1) 
-						temp1 += min_coef_X[r];
+					if (r < NUM_LEVEL - 1) temp1 += min_coef_X[r];
 				}
 				Z_D += temp_sum;
 
 				for (r = 0; r < r_temp; r++)
 				{
-					Y[i][min_Jindex[r]][min_Kindex[r]][r] = 1;
+					Y[i][min_Jindex[r]][min_Kindex[r]][r] = 1;//update Y
 				}
 				Y[i][NUM_FAC - 1][NUM_STA - 1][r_temp] = 1;
 			}
@@ -862,17 +877,17 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 				temp_sum = numeric_limits<float>::infinity();
 				temp1 = 0;
 				r_temp = 0;
-				for (r = 0; r < NUM_LEVEL; r++)
+				for (r = 0; r<NUM_LEVEL; r++)
 				{
-					if (temp_sum > temp1 + demand[i] * PENAL*beta[r]) {
+					if (temp_sum>temp1 + demand[i] * PENAL*beta[r]) {
 						temp_sum = temp1 + demand[i] * PENAL*beta[r];
 						r_temp = r;
-						for (r1 = 0; r1 < r_temp; r1++)min_Jindex[r1] = mateRJ[r1], min_Kindex[r1] = mateRK[r1];//undefined yet
+						for (r1 = 0; r1<r_temp; r1++)min_Jindex[r1] = mateRJ[r1], min_Kindex[r1] = mateRK[r1];//undefined yet
 					}
-					if (r < NUM_LEVEL - 1) Hungarian(temp1, r + 1, link, mateRJ, mateRK, coef_Y);//undefined yet
+					if (r<NUM_LEVEL - 1) Hungarian(temp1, r + 1, link, mateRJ, mateRK, coef_Y);//undefined yet
 				}
 				Z_D += temp_sum;
-				for (r = 0; r < r_temp; r++)
+				for (r = 0; r<r_temp; r++)
 				{
 					//XX_coef[j]+=min_coef_X[r]-p[i][j][min_kr_index[r]][r]*e[i][j][min_kr_index[r]];
 					Y[i][min_Jindex[r]][min_Kindex[r]][r] = 1;//update Y
@@ -891,13 +906,13 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 			X_eval[j] = X_temp[j];
 		}
 		Eval_Problem(distance,link,X_eval,1,Z_U);*/
-		//cout << Z_U << "\t" << Z_D << "\t" << Z_U_All << "\t" << Z_D_All << endl;
+		//cout<<Z_U<<"\t"<<Z_D<< "\t" << Z_U_All << "\t" << Z_D_All << endl;
 
 		// update the step size lamb
 		tempxx = abs(Z_D - Z_D_All) / Z_D_All; // check if the lowerbound is improving
-		if (tempxx < 0.001f)
+		if (tempxx<0.001f)
 			convergenceCount++;
-		else
+		else 
 			convergenceCount = 0;
 		if (Iteration > 200) {
 			if (worst_Z_D > Z_D)
@@ -909,7 +924,7 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 				if ((best_Z_D - worst_Z_D) / best_Z_D > 0.02f)
 					Lamb = Lamb / dec_ratio;
 				if ((best_Z_D - worst_Z_D) / best_Z_D < 0.001f)
-					Lamb = Lamb * ((dec_ratio - 1) / 2 + 1);
+					Lamb = Lamb*((dec_ratio - 1) / 2 + 1);
 				worst_Z_D = numeric_limits<float>::infinity();
 				best_Z_D = -numeric_limits<float>::infinity();
 				Count_1 = 0;
@@ -924,13 +939,13 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 				Count_1++;
 				Count = 0;
 			}
-			if (Count_1 > 5) {
-				Lamb = Lamb / 1.05f;
-				Count_1 = 0;
+			if (Count_1>5) { 
+				Lamb = Lamb / 1.05f; 
+				Count_1 = 0; 
 			}
-			if (Count > 5) {
-				Lamb = Lamb * 1.03f;
-				Count = 0;
+			if (Count>5) { 
+				Lamb = Lamb*1.03f; 
+				Count = 0; 
 			}
 		}
 
@@ -949,7 +964,7 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 		}
 
 		// update multipliers
-		float step_sum = 0.00001, step1_sum;
+		float step_sum = 0.00001, step1_sum;				//in case 0/0
 		for (i = 0; i < NUM_CUS; i++) {
 			for (j = 0; j < NUM_FAC - 1; j++) {
 				for (k = 0; k < NUM_STA - 1; k++) {
@@ -963,20 +978,20 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 				}
 			}
 		}
-		tk = Lamb * (Z_U_All - Z_D_All) / step_sum;
-		for (i = 0; i < NUM_CUS; i++) {	//determine next lambda
-			for (j = 0; j < NUM_FAC - 1; j++) {
-				for (k = 0; k < NUM_STA - 1; k++) {
+		tk = Lamb*(Z_U_All - Z_D_All) / step_sum;
+		for (i = 0; i<NUM_CUS; i++) {	//determine next lambda
+			for (j = 0; j<NUM_FAC - 1; j++) {
+				for (k = 0; k<NUM_STA - 1; k++) {
 					if (link[j][k] && (!X_mask[j])) {
 						step1_sum = 0;
-						for (r = 0; r < NUM_LEVEL - 1; r++) {
+						for (r = 0; r<NUM_LEVEL - 1; r++) {
 							step1_sum += Y[i][j][k][r];
 						}
 						mu[i][j][k] -= tk*(-step1_sum + X_temp[j]);
 						mu[i][j][k] = mu[i][j][k]>0 ? mu[i][j][k] : 0;
 					}
 					else {
-						mu[i][j][k] = 0;
+						mu[i][j][k] = 0; 
 					}
 				}
 			}
@@ -984,6 +999,11 @@ void SolveLR(const vector<vector<vector<float>>> & distance, const vector<vector
 	}
 	Z_D_new = Z_D_All;
 	Z_U_new = Z_U_All;
+	/*for (int i = 0; i < NUM_FAC; i++) {
+		if (X_temp[i] == 1) {
+			cout << "X: " << i + 1 << endl;
+		}
+	}*/
 	GetCost(distance, JAss, KAss, X_temp, Z_U);
 
 	delete[] min_coef_X;
@@ -1823,123 +1843,116 @@ void BBBFS(const vector<vector<vector<float>>> &distance,const vector<vector<int
 
 	int i, j, k, l, tempCount, reason, this_Node, num_path; // isTrim, trimCount;int j, isTerminate;this_Node; isReturn=0;, Level,,isUpdate
 
-	while (1) {
-		//reaches resourse limit 
-		Count_Tree++;
-		this_Node = Count_Tree;
-		reason = 0;
-		if (Count_Tree > Count_Tree_Lim) {
-			cout << "!Node number reaches its minumum, BB is ending!\n";
-			cout << "Count_Tree is too large!" << endl;
-			reason = 2;
-			break;
-		}
+	while(1){
+        //reaches resourse limit 
+        Count_Tree++;
+		this_Node=Count_Tree;
+		reason=0;
+        if (Count_Tree>Count_Tree_Lim) {
+            //cout<<"!Node number reaches its minumum, BB is ending!\n";
+		    //cout<<"Count_Tree is too large!"<<endl;
+			reason=2;
+            break;
+        }
+    
+        endTime=(float)clock();
+        if((endTime-beginTime)/CLOCKS_PER_SEC>timeLimit){
+		    //cout<<endTime<<"\t"<<beginTime<<endl;
+            //cout<<"!time is up, BB is ending!\n";
+			reason=3;
+            break;
+        }
 
-		endTime = (float)clock();
-		if ((endTime - beginTime) / CLOCKS_PER_SEC > timeLimit) {
-			cout << endTime << "\t" << beginTime << endl;
-			cout << "!time is up, BB is ending!\n";
-			reason = 3;
-			break;
-		}
-
-		tempCount = 0;
-		for (j = 0; j < NUM_FAC - 1; j++)
-			tempCount += thisBBNode.X_mask[j];
-		if (tempCount == NUM_FAC - 1) {
-			cout << "tempt_count=" << tempCount << endl; getchar();
-			for (j = 0; j < NUM_FAC - 1; j++) 
-				X[j] = thisBBNode.X_fixed[j] & thisBBNode.X_mask[j];
-
+        // reason=0;
+        tempCount=0;
+		for (j=0;j<NUM_FAC-1;j++) tempCount+=thisBBNode.X_mask[j];
+		if (tempCount==NUM_FAC-1){
+			for (j=0;j<NUM_FAC-1;j++) X[j]=thisBBNode.X_fixed[j]&thisBBNode.X_mask[j];
 			GetCost(distance, JAss, KAss, X, thisBBNode.Z_U);
 			/*IloEnv env_BB;
 			IloIntArray X_eval(env_BB,NUM_FAC);
 			for (j=0;j<NUM_FAC;j++) X_eval[j]=X[j];
 			Eval_Problem(distance,link,X_eval,0,thisBBNode.Z_U);*/
-			//thisBBNode.Z_D = thisBBNode.Z_U;
+			thisBBNode.Z_D = thisBBNode.Z_U;
 			//cout<<"All installations are masked"<<endl;
 			reason = 1;
+			//????????should break or not break;
 			break;
 		}
-
-		if (true) { //could run LR
-			for (i = 0; i < NUM_CUS; i++) {		//initialize 
-				for (j = 0; j < NUM_FAC - 1; j++) {
-					l = 0;
-					for (k = 0; k < NUM_STA - 1; k++)
-						if (link[j][k]) {
-						mu[i][j][k] = thisBBNode.muS[i][j][l];
+		
+		// isTrim=-1;
+		if(true) { //could run LR
+			for(i=0;i<NUM_CUS;i++){		//initialize 
+				for(j=0;j<NUM_FAC-1;j++){
+					l=0;
+					for(k=0;k<NUM_STA-1;k++)if (link[j][k]){
+						mu[i][j][k]=thisBBNode.muS[i][j][l];
 						l++;
 					}
 				}
-			}
+			}	
 			SolveLR(distance, link, JAss, KAss, X, thisBBNode.Z_D, thisBBNode.Z_U, mu, thisBBNode.X_fixed, thisBBNode.X_mask, Num_Iteration, 1.5, 1.05);
-		}
+        }
 
-		if (Z_U_Global > thisBBNode.Z_U) {
-			Z_U_Global = thisBBNode.Z_U;
-			for (j = 0; j < NUM_FAC - 1; j++) {
-				x_opt[j] = X[j];
-			}
-		}
-		if ((Z_U_Global - thisBBNode.Z_D) / (Z_U_Global + 0.00001)>-0.00001) { // Z_U_Global-thisBBNode.Z_D>0
-		// heuristically determine which variable to branch;
+        if (Z_U_Global>thisBBNode.Z_U)	{
+	        Z_U_Global=thisBBNode.Z_U;
+			for(j=0;j<NUM_FAC-1;j++)x_opt[j]=X[j];
+        }
+		if ((Z_U_Global-thisBBNode.Z_D)/(Z_U_Global+0.00001)>-0.00001){ // Z_U_Global-thisBBNode.Z_D>0
+		//heuristically determine which variable to branch;
 			float  cost_reduction;
-
+		
 			OneStepGreedy(distance, link, JAss, KAss, thisBBNode.temp_j, cost_reduction, X, thisBBNode.X_mask, 0);
-
-			BBNode thisBBNode_L, thisBBNode_R;
-
-			thisBBNode_L.X_fixed = new bool[NUM_FAC];
-			thisBBNode_L.X_mask = new bool[NUM_FAC];
-			thisBBNode_R.X_fixed = new bool[NUM_FAC];
-			thisBBNode_R.X_mask = new bool[NUM_FAC];
+			
+			BBNode thisBBNode_L,thisBBNode_R;
+			
+			thisBBNode_L.X_fixed= new bool [NUM_FAC];
+            thisBBNode_L.X_mask= new bool [NUM_FAC];
+            thisBBNode_R.X_fixed= new bool [NUM_FAC];
+            thisBBNode_R.X_mask= new bool [NUM_FAC];
 			thisBBNode_L.muS = new float **[NUM_CUS];//define lagrangian multiplier
 			thisBBNode_R.muS = new float **[NUM_CUS];
-
-			for (i = 0; i < NUM_CUS; i++) {	//initialize 
-				thisBBNode_L.muS[i] = new float *[NUM_FAC - 1];
-				thisBBNode_R.muS[i] = new float *[NUM_FAC - 1];
-				for (j = 0; j < NUM_FAC - 1; j++) {
-					num_path = 0;
-					for (k = 0; k < NUM_STA - 1; k++)if (link[j][k])num_path++;
-					thisBBNode_L.muS[i][j] = new float[num_path];
-					thisBBNode_R.muS[i][j] = new float[num_path];
-					l = 0;
-					for (k = 0; k < NUM_STA - 1; k++) {
-						if (link[j][k]) {
-							thisBBNode_L.muS[i][j][l] = mu[i][j][k];
-							thisBBNode_R.muS[i][j][l] = mu[i][j][k];
+			
+			for(i=0;i<NUM_CUS;i++){				 //initialize 
+				thisBBNode_L.muS[i]=new float *[NUM_FAC-1];
+				thisBBNode_R.muS[i]=new float *[NUM_FAC-1]; 
+				for(j=0;j<NUM_FAC-1;j++){
+					num_path=0;
+					for(k=0;k<NUM_STA-1;k++)if (link[j][k])num_path++;
+					thisBBNode_L.muS[i][j]= new float [num_path];
+					thisBBNode_R.muS[i][j]= new float [num_path];
+					l=0;
+					for(k=0;k<NUM_STA-1;k++){
+						if (link[j][k]){
+							thisBBNode_L.muS[i][j][l]= mu[i][j][k];
+							thisBBNode_R.muS[i][j][l]= mu[i][j][k];
 							l++;
 						}
 					}
 				}
 			}
-
-			for (int j = 0; j < NUM_FAC; j++) {
-				thisBBNode_L.X_fixed[j] = thisBBNode_R.X_fixed[j] = thisBBNode.X_fixed[j];
-				thisBBNode_L.X_mask[j] = thisBBNode_R.X_mask[j] = thisBBNode.X_mask[j];
-			}
-			int temp_j = thisBBNode.temp_j;
-			thisBBNode_L.X_mask[temp_j] = thisBBNode_R.X_mask[temp_j] = 1;
-			thisBBNode_L.X_fixed[temp_j] = 1; thisBBNode_R.X_fixed[temp_j] = 0;
-			thisBBNode_L.Z_D = thisBBNode_R.Z_D = thisBBNode.Z_D;
-			thisBBNode_L.Z_U = thisBBNode_R.Z_U = thisBBNode.Z_U;
-			thisBBNode_L.temp_j = thisBBNode_R.temp_j = -1;
+				
+			for(int j=0;j<NUM_FAC;j++){
+                thisBBNode_L.X_fixed[j]=thisBBNode_R.X_fixed[j]=thisBBNode.X_fixed[j];
+                thisBBNode_L.X_mask[j]=thisBBNode_R.X_mask[j]=thisBBNode.X_mask[j];
+            }
+			int temp_j= thisBBNode.temp_j;
+            thisBBNode_L.X_mask[temp_j]=thisBBNode_R.X_mask[temp_j]=1;
+            thisBBNode_L.X_fixed[temp_j]=1;thisBBNode_R.X_fixed[temp_j]=0;
+			thisBBNode_L.Z_D=thisBBNode_R.Z_D=thisBBNode.Z_D;
+			thisBBNode_L.Z_U=thisBBNode_R.Z_U=thisBBNode.Z_U;
+			thisBBNode_L.temp_j=thisBBNode_R.temp_j=-1;
 			Live_queue.push(thisBBNode_L);
 			Live_queue.push(thisBBNode_R);
 		}
-		else {
+		else{
 			//cout<<"Node: "<<this_Node<<",this branch is trimmed!"<<endl;
 		}
 
 		break;
 	}
-	if (reason >= 1) {
-		Z_D_Global = Z_D_Global < thisBBNode.Z_D ? Z_D_Global : thisBBNode.Z_D;
-	} // choose the lowest LB for the live nodes which haven't been branched
+	if (reason>=1){Z_D_Global=Z_D_Global<thisBBNode.Z_D?Z_D_Global:thisBBNode.Z_D;} // choose the lowest LB for the live nodes which haven't been branched
 }
-
 
 
 void Hungarian(float &result, int temp_R,const vector<vector<int>> &link,int *mateRJ, int *mateRK,float ***coef_Y){
