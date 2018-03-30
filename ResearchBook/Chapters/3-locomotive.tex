@@ -2,7 +2,7 @@
 
 
 \chapter{Integrated Planning for Multiple Types of Locomotive Work Facilities under Location, Routing, and Inventory Considerations}\label{chap:locomotive}
-\chaptermark{Planning of Locomotive Facilities}
+\chaptermark{Planning of Locomotive Facilities} % short chapter name
 
 
 
@@ -27,19 +27,18 @@ In this section, we present the model formulation of solving the integrated loco
 We first describe the notation used in the model formulation.
 
 \subsubsection{Sets}
-\begin{tabular}{ll}
+\begin{tabular}{ll}  % first type of notation list
     $\mathcal{F}$            & set of fixed facility types.  \\
     $\mathcal{M}$            & set of movable facility types.  \\
     $\mathcal{S}$            & set of work types, excluding fueling.  \\
 \end{tabular}
 
-\subsubsection{Parameters}
-\begin{notation}
+\subsubsection{Parameters} 
+\begin{notation}   % second type of notation list
   \item[$F_{n}^{\alpha}$] Annual fixed cost of operating a facility of type $\alpha$ at candidate location $n$.
   \item[$C_{n}^{\alpha}$] Cost of unit capacity at a facility of type $\alpha$ at yard $n$.
   \item[$Q_{n}^{\alpha,\max}$] Maximum (minimum) allowable capacity of facility type $\alpha$ at yard $n$.
 \end{notation}
-
 
 \subsection{Location-Inventory Problem Formulation}\label{sec:locomotive:location-inventory}
 Below, we present the formulation for the location-inventory problem.
@@ -47,16 +46,9 @@ Below, we present the formulation for the location-inventory problem.
 \subsubsection{Objective}
 \begin{align*}
    \text{Minimize} ~ & \sum_{\alpha \in \mathcal{F}\cup\mathcal{M}} \sum_{n\in \mathcal{N}_{\alpha}} x_{n}^{\alpha} F_{n}^{\alpha} + \sum_{\alpha \in \mathcal{F}}\sum_{n\in \mathcal{N}_{\alpha}} q_{n}^{\alpha} C_{n}^{\alpha} + \sum_{l\in \mathcal{M}}\sum_{n\in \mathcal{N}_{l}}\left( h_{n}^{l}\cdot F_{l} + t_{n}^{l}\cdot V_{l} \right) \\
-  & + \sum_{\alpha\in\mathcal{F}}\sum_{n\in \mathcal{N}_{\alpha}}\sum_{n_1\in \mathcal{N}}\sum_{\beta\in\mathcal{S}} D_{n_{1}}^{\beta}\cdot y_{n_{1},\beta}^{n,\alpha} \cdot C_{n_{1},n} + \sum_{\alpha\in\mathcal{F}}\sum_{r\in\mathcal{R}}\sum_{s\in \mathcal{S}_{r}}\sum_{n\in \mathcal{N}_{\alpha}}\sum_{n_1\in\mathcal{N}}G_{r,s}^{n_{1}}\cdot d_{r,s}^{n,\alpha}\cdot C_{n_{1}, n} \\
-  & + \sum_{r\in\mathcal{R}}\sum_{s\in \mathcal{S}_{r}}E_{r}\left[ h_{r}^{s}\sum_{n\in \mathcal{N}}\left(G_{r,s}^{n}\cdot C_n\right) + p_{r}^s\sum_{n\in \mathcal{N}}\left(G_{r,s}^n\cdot C_{n,0}\right) + v_{r}^{s}\cdot CV+pv_{r}^{s}\cdot CV_{0}\right]
+  & + \sum_{r\in\mathcal{R}}\sum_{s\in \mathcal{S}_{r}}E_{r}\left[ h_{r}^{s}\sum_{n\in \mathcal{N}}\left(G_{r,s}^{n}\cdot C_n\right) + p_{r}^s\sum_{n\in \mathcal{N}}\left(G_{r,s}^n\cdot C_{n,0}\right) \right]
 \end{align*}
-\subsubsection{Demand-Satisfaction Constraints}
-\begin{align}
-    \sum_{\alpha\in\mathcal{F}\cup\mathcal{M}}\sum_{n\in \mathcal{N}_{\alpha}} y_{n_1,\beta}^{n,\alpha}=1, ~\forall n_{1}\in \mathcal{N},\beta\in\mathcal{S}
-    \label{eqn:service-satisfy} \\
-    \label{eqn:fueling-satisfy}
-    \sum_{\alpha\in\mathcal{F}\cup\mathcal{M}}\sum_{n\in \mathcal{N}_{\alpha}} d_{r,s}^{n,\alpha} = E_{r}\cdot p_{r}^{s}, ~\forall r\in\mathcal{R}, s\in\mathcal{S}_{r}
-\end{align}
+
 
 
 \section{Solution Approach}\label{sec:locomotive:algorithm}

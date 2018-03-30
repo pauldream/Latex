@@ -4,11 +4,6 @@
 %
 % Copyright (C) 2017 André Miede and Ivo Pletikosić
 %
-% If you like the style then I would appreciate a postcard. My address
-% can be found in the file ClassicThesis.pdf. A collection of the
-% postcards I received so far is available online at
-% http://postcards.miede.de
-%
 % License:
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -53,6 +48,8 @@
 \addbibresource{thesisrefs.bib}
 \addbibresource[label=ownpubs]{Siyang_Publications.bib}
 \addbibresource[label=ownmanus]{Siyang_Manuscripts.bib}
+%\renewcommand*{\bibname}{new name}
+%\setbibpreamble{}
 
 
 %********************************************************************
@@ -61,61 +58,56 @@
 %\hyphenation{put special hyphenation here}
 
 
-%*********************************************************************
-% GO!GO!GO! MOVE IT!
-%*********************************************************************
+
 \begin{document}
 
 
 %\frenchspacing
 \raggedbottom
 \selectlanguage{american} % american ngerman
-%\renewcommand*{\bibname}{new name}
-%\setbibpreamble{}
 \pagenumbering{roman}
 \pagestyle{plain}
+
 
 
 %********************************************************************
 % Frontmatter
 %********************************************************************
 \include{FrontBackmatter/Titlepage}
-\include{FrontBackmatter/Titleback}
-\cleardoublepage\include{FrontBackmatter/Abstract}
-\cleardoublepage\include{FrontBackmatter/Publications}
-\cleardoublepage\include{FrontBackmatter/Acknowledgments}
-\cleardoublepage\include{FrontBackmatter/Contents}
+\include{FrontBackmatter/Titleback}\cleardoublepage
+\include{FrontBackmatter/Abstract}\cleardoublepage
+\include{FrontBackmatter/Acknowledgments}\cleardoublepage
+\include{FrontBackmatter/Publications}\cleardoublepage
+\include{FrontBackmatter/Contents}\cleardoublepage
+
 
 
 %********************************************************************
 % Mainmatter
 %********************************************************************
-\cleardoublepage
+
 \pagestyle{scrheadings}
 \pagenumbering{arabic}
 %\setcounter{page}{90}
 \cleardoublepage
 
-\part{PhD Dissertation: RELIABLE FACILITY LOCATION}\label{pt:manual}
+
+\part{PhD Dissertation: RELIABLE FACILITY LOCATION}\label{part:dissertation}
 \include{Chapters/1-introduction}
 \include{Chapters/2-sensor}
 \cleardoublepage
-% \ctparttext{You can put some informational part preamble text here.
-% Illo principalmente su nos. Non message \emph{occidental} angloromanic
-% da. Debitas effortio simplificate sia se, auxiliar summarios da que,
-% se avantiate publicationes via. Pan in terra summarios, capital
-% interlingua se que. Al via multo esser specimen, campo responder que
-% da. Le usate medical addresses pro, europa origine sanctificate nos se.}
 
-\part{Railroad Planning and Optimization}\label{pt:railroad}
+
+\part{Railroad Planning and Optimization}\label{part:railroad}
 \include{Chapters/3-locomotive}
 \cleardoublepage
 
 
+
 %********************************************************************
-% Other Stuff in the Back
+% Backmatter
 %********************************************************************
-\cleardoublepage\include{FrontBackmatter/Bibliography}
+\include{FrontBackmatter/Bibliography}
 
 
 \end{document}

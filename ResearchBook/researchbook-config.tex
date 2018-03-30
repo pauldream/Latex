@@ -1,31 +1,24 @@
 % ****************************************************************************************************
 % classicthesis-config.tex
-% formerly known as loadpackages.sty, classicthesis-ldpkg.sty, and classicthesis-preamble.sty
 % Use it at the beginning of your ClassicThesis.tex, or as a LaTeX Preamble
 % in your ClassicThesis.{tex,lyx} with \input{classicthesis-config}
 % ****************************************************************************************************
-% If you like the classicthesis, then I would appreciate a postcard.
-% My address can be found in the file ClassicThesis.pdf. A collection
-% of the postcards I received so far is available online at
-% http://postcards.miede.de
-% ****************************************************************************************************
 
 
 % ****************************************************************************************************
-% 0. Set the encoding of your files. UTF-8 is the only sensible encoding nowadays. If you can't read
-% äöüßáéçèê∂åëæƒÏ€ then change the encoding setting in your editor, not the line below. If your editor
-% does not support utf8 use another editor!
+% 0. Set the encoding of your files. UTF-8 is the only sensible encoding nowadays.
 % ****************************************************************************************************
 \PassOptionsToPackage{utf8}{inputenc}
   \usepackage{inputenc}
 
+
 % ****************************************************************************************************
-% 1. Configure classicthesis for your needs here, e.g., remove "drafting" below
-% in order to deactivate the time-stamp on the pages
+% 1. Configure classicthesis for your needs here, pass parameter values to researchbook.sty
+% e.g., remove "drafting" in order to deactivate the time-stamp on the pages
 % (see ClassicThesis.pdf for more information):
 % ****************************************************************************************************
 \PassOptionsToPackage{
-  drafting=true,    % print version information on the bottom of the pages
+  drafting=true,    % print data & version information on the bottom of the pages
   tocaligned=false, % the left column of the toc will be aligned (no indentation)
   dottedtoc=true,   % page numbers in ToC flushed right
   parts=true,       % use part division
@@ -38,10 +31,12 @@
   beramono=true,    % toggle a nice monospaced font (w/ bold)
   minionpro=false   % setup for minion pro font; use minion pro small caps as well (only with pdfLaTeX)
 }{researchbook}
+% ****************************************************************************************************
 
 
 % ****************************************************************************************************
 % 2. Personal data and user ad-hoc commands
+% customize them as needed
 % ****************************************************************************************************
 \newcommand{\myTitle}{Summary of My Research\xspace}
 \newcommand{\mySubtitle}{From The Academia to The Industry: The Precious Journey\xspace}
@@ -54,7 +49,7 @@
 \newcommand{\myDepartment}{Civil and Environmental Engineering\xspace}
 \newcommand{\myGradUniv}{University of Illinois at Urbana-Champaign\xspace}
 \newcommand{\myUgradUniv}{Tsinghua University\xspace}
-\newcommand{\myLocation}{Saarbrücken\xspace}
+\newcommand{\myLocation}{Champaign, IL\xspace}
 \newcommand{\myTime}{February 2018\xspace}
 \newcommand{\myVersion}{version 1.0}
 
@@ -63,7 +58,7 @@
 % ********************************************************************
 \newcounter{dummy} % necessary for correct hyperlinks (to index, bib, etc.)
 \newlength{\abcd} % for ab..z string length calculation
-\providecommand{\mLyX}{L\kern-.1667em\lower.25em\hbox{Y}\kern-.125emX\@}
+\providecommand{\mLyX}{L\kern-.1667em\lower.25em\hbox{Y}\kern-.125emX\@} % format lyx as an example
 \newcommand{\ie}{i.\,e.}
 \newcommand{\Ie}{I.\,e.}
 \newcommand{\eg}{e.\,g.}
@@ -73,8 +68,6 @@
 
 % ****************************************************************************************************
 % 3. Loading some handy packages
-% ****************************************************************************************************
-% ********************************************************************
 % Packages with options that might require adjustments
 % ********************************************************************
 %\PassOptionsToPackage{ngerman,american}{babel}   % change this to your language(s), main language last
@@ -99,7 +92,6 @@
 \usepackage{biblatex}
 
 % \PassOptionsToPackage{fleqn}{amsmath}  % math environments Position equations at a fixed indent from the left margin rather than centered in the text column.
-
 \usepackage{amsmath}
 
 % ********************************************************************
@@ -112,7 +104,7 @@
 \usepackage{xspace} % to get the spacing after macros right
 \usepackage{mparhack} % get marginpar right
 %\usepackage{fixltx2e} % fixes some LaTeX stuff --> since 2015 in the LaTeX kernel (see below)
-% \usepackage[latest]{latexrelease} % emulate newer kernel version if older is detected
+%\usepackage[latest]{latexrelease} % emulate newer kernel version if older is detected
 \PassOptionsToPackage{printonlyused,smaller}{acronym}
   \usepackage{acronym} % nice macros for handling all acronyms in the thesis
   %\renewcommand{\bflabel}[1]{{#1}\hfill} % fix the list of acronyms --> no longer working
@@ -126,21 +118,17 @@
 %\usetikzlibrary{external}
 %\tikzexternalize[mode=list and make, prefix=ext-tikz/]
 % ****************************************************************************************************
+% ****************************************************************************************************
 
 
 % ****************************************************************************************************
 % 4. Setup floats: tables, (sub)figures, and captions
 % ****************************************************************************************************
 \usepackage{tabularx} % better tables
-  % \setlength{\extrarowheight}{3pt} % increase table row height
+  %\setlength{\extrarowheight}{3pt} % increase table row height
 \newcommand{\tableheadline}[1]{\multicolumn{1}{c}{\spacedlowsmallcaps{#1}}}
 \newcommand{\myfloatalign}{\centering} % to be used with each float for alignment
 \usepackage{caption}
-% Thanks to cgnieder and Claus Lahiri
-% http://tex.stackexchange.com/questions/69349/spacedlowsmallcaps-in-caption-label
-% [REMOVED DUE TO OTHER PROBLEMS, SEE ISSUE #82]
-%\DeclareCaptionLabelFormat{smallcaps}{\bothIfFirst{#1}{~}\MakeTextLowercase{\textsc{#2}}}
-%\captionsetup{font=small,labelformat=smallcaps} % format=hang,
 \captionsetup{font=large} % format=hang,
 \usepackage{algorithmthesis}
 \usepackage{subfigure}
@@ -157,16 +145,14 @@
 \urlstyle{same}
 
 \makeatletter
-\DeclareOldFontCommand{\rm}{\normalfont\rmfamily}{\mathrm}
-\DeclareOldFontCommand{\sf}{\normalfont\sffamily}{\mathsf}
-\DeclareOldFontCommand{\tt}{\normalfont\ttfamily}{\mathtt}
-\DeclareOldFontCommand{\bf}{\normalfont\bfseries}{\mathbf}
-\DeclareOldFontCommand{\it}{\normalfont\itshape}{\mathit}
-\DeclareOldFontCommand{\sl}{\normalfont\slshape}{\@nomath\sl}
-\DeclareOldFontCommand{\sc}{\normalfont\scshape}{\@nomath\sc}
+  \DeclareOldFontCommand{\rm}{\normalfont\rmfamily}{\mathrm}
+  \DeclareOldFontCommand{\sf}{\normalfont\sffamily}{\mathsf}
+  \DeclareOldFontCommand{\tt}{\normalfont\ttfamily}{\mathtt}
+  \DeclareOldFontCommand{\bf}{\normalfont\bfseries}{\mathbf}
+  \DeclareOldFontCommand{\it}{\normalfont\itshape}{\mathit}
+  \DeclareOldFontCommand{\sl}{\normalfont\slshape}{\@nomath\sl}
+  \DeclareOldFontCommand{\sc}{\normalfont\scshape}{\@nomath\sc}
 \makeatother
-
-
 % ****************************************************************************************************
 
 
@@ -211,7 +197,6 @@
 %\PassOptionsToPackage{pdftex}{graphicx} %%%IVO: driver will be chosen automatically
   \usepackage{graphicx}
 
-
 % ********************************************************************
 % Hyperreferences
 % ********************************************************************
@@ -245,14 +230,14 @@
 % ********************************************************************
 \makeatletter
 % \theoremstyle{plain}
-\newtheorem{defn}{Definition}
-\newtheorem{prop}{Proposition}
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}{Lemma}
-\newtheorem{cor}{Corollary}
-\newtheorem{rem}{Remark}
+  \newtheorem{defn}{Definition}
+  \newtheorem{prop}{Proposition}
+  \newtheorem{theo}{Theorem}
+  \newtheorem{lemma}{Lemma}
+  \newtheorem{cor}{Corollary}
+  \newtheorem{rem}{Remark}
 
-\@ifpackageloaded{babel}%
+  \@ifpackageloaded{babel}%
   {%
     \addto\extrasamerican{%
       \renewcommand*{\figureautorefname}{Figure}%
@@ -284,7 +269,6 @@
     }{\relax}
 \makeatother
 
-
 \usepackage{calc}
 \usepackage{mdwlist}
 \newenvironment{notation}[1][1.2cm]{
@@ -301,6 +285,7 @@
     \setlength{\listparindent}{0cm}
     \setlength{\topsep}{0pt}
   }}{\end{list}}
+% ****************************************************************************************************
 
 
 % ****************************************************************************************************
