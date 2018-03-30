@@ -3,11 +3,6 @@
 %
 % Copyright (C) 2017 André Miede and Ivo Pletikosić
 %
-% If you like the style then I would appreciate a postcard. My address
-% can be found in the file ClassicThesis.pdf. A collection of the
-% postcards I received so far is available online at
-% http://postcards.miede.de
-%
 % License:
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -35,7 +30,6 @@
 \ProvidesPackage{researchbook}[2017/10/13 v4.4 Typographic style for a classic-looking thesis]
 \PassOptionsToPackage{latest}{latexrelease} % replacement for fixltx2e,
   \RequirePackage{latexrelease} % emulate newer kernel version if older is detected
-
 \RequirePackage{ifthen}
 
 % ********************************************************************
@@ -141,10 +135,10 @@
 
 
 % ********************************************************************
-% Colors
+% Colors, define your own colors if needed
 % ********************************************************************
 \PassOptionsToPackage{dvipsnames}{xcolor}
-    \RequirePackage{xcolor} % [dvipsnames]
+  \RequirePackage{xcolor} % [dvipsnames]
 \definecolor{halfgray}{gray}{0.55} % chapter numbers will be semi transparent .5 .55 .6 .0
 \definecolor{webgreen}{rgb}{0,.5,0}
 \definecolor{webbrown}{rgb}{.6,0,0}
@@ -152,66 +146,67 @@
 %\definecolor{RoyalBlue}{cmyk}{1, 0.50, 0, 0}
 %\definecolor{Black}{cmyk}{0, 0, 0, 0}
 
+
 % ********************************************************************
 % Font Stuff
 % ********************************************************************
 \ifthenelse{\boolean{xetex}\OR\boolean{luatex}}
-   { % use fontspec and OpenType fonts with utf8 engines
-     \RequirePackage{fontspec}
-     \setmainfont[Ligatures=TeX,Numbers=OldStyle]{TeX Gyre Pagella} % Palatino clone
-     \newfontfamily{\sectionfont}[UprightFont={* Bold}]{Optima}
-     \linespread{1.05} % a bit more for Palatino
-     % \ifthenelse{\boolean{ct@beramono}}%
-     %   {\setmonofont[Scale=0.85]{DejaVu Sans Mono}} % like Bera; Scale=MatchLowercase
-     %   {\setmonofont[Scale=1]{Latin Modern Mono}}
-     \RequirePackage{unicode-math}
-     \setmathfont{TeX Gyre Pagella Math}
-     % font for the chapter numbers will be defined in the old way below
-     % because there is no OpenType Euler font; this is how it should be done:
-     %\newfontface\chapterNumber[Scale=7,Color=000000]{TeX Gyre Pagella Bold}
-   }
-   { % use Type 1 fonts with pdflatex
-     \ifthenelse{\boolean{ct@minionpro}}% specialists: MinionPro
-       {%
-         % in order have Euler math fonts work with Minion, special option is needed
-         \ifthenelse{\boolean{ct@eulermath}}%
-           {%
-             \PassOptionsToPackage{opticals,mathlf,onlytext}{MinionPro}%
-             \RequirePackage{MinionPro} %  opticals, fullfamily, osf
-           }{%
-             \PassOptionsToPackage{opticals,mathlf}{MinionPro}%
-             \RequirePackage{MinionPro} %  opticals, fullfamily, osf
-           }
-       }{
-       % default: Palatino
-         \PassOptionsToPackage{osf,sc}{mathpazo}%
-         \RequirePackage{mathpazo} % Palatino with real small caps and old style figures
-         \linespread{1.05} % a bit more for Palatino
+  { % use fontspec and OpenType fonts with utf8 engines
+    \RequirePackage{fontspec}
+    \setmainfont[Ligatures=TeX,Numbers=OldStyle]{TeX Gyre Pagella} % Palatino clone
+    \newfontfamily{\sectionfont}[UprightFont={* Bold}]{Optima}
+    \linespread{1.05} % a bit more for Palatino
+    % \ifthenelse{\boolean{ct@beramono}}%
+    %   {\setmonofont[Scale=0.85]{DejaVu Sans Mono}} % like Bera; Scale=MatchLowercase
+    %   {\setmonofont[Scale=1]{Latin Modern Mono}}
+    \RequirePackage{unicode-math}
+    \setmathfont{TeX Gyre Pagella Math}
+    % font for the chapter numbers will be defined in the old way below
+    % because there is no OpenType Euler font; this is how it should be done:
+    % \newfontface\chapterNumber[Scale=7,Color=000000]{TeX Gyre Pagella Bold}
+  }
+  { % use Type 1 fonts with pdflatex
+    \ifthenelse{\boolean{ct@minionpro}}% specialists: MinionPro
+      {%
+       % in order have Euler math fonts work with Minion, special option is needed
+       \ifthenelse{\boolean{ct@eulermath}}%
+         {%
+           \PassOptionsToPackage{opticals,mathlf,onlytext}{MinionPro}%
+           \RequirePackage{MinionPro} %  opticals, fullfamily, osf
+         }{%
+           \PassOptionsToPackage{opticals,mathlf}{MinionPro}%
+           \RequirePackage{MinionPro} %  opticals, fullfamily, osf
+         }
+      }{
+      % default: Palatino
+       \PassOptionsToPackage{osf,sc}{mathpazo}%
+       \RequirePackage{mathpazo} % Palatino with real small caps and old style figures
+       \linespread{1.05} % a bit more for Palatino
+      }
+
+      \ifthenelse{\boolean{ct@beramono}}%
+       {\PassOptionsToPackage{scaled=0.85}{beramono}%
+         \RequirePackage{beramono}%
+       }{%
+       \relax%
+       % put your own suitable typewriter font here
+       %\renewcommand{\ttdefault}{\rmdefault}
        }
 
-       \ifthenelse{\boolean{ct@beramono}}%
-         {\PassOptionsToPackage{scaled=0.85}{beramono}%
-           \RequirePackage{beramono}%
-         }{%
-         \relax%
-         % put your own suitable typewriter font here
-         %\renewcommand{\ttdefault}{\rmdefault}
-         }
+      \ifthenelse{\boolean{ct@eulermath}}%
+       {\PassOptionsToPackage{euler-digits}{eulervm}%
+       \RequirePackage{eulervm}} % Euler math fonts
+       {\relax}
+  }
 
-       \ifthenelse{\boolean{ct@eulermath}}%
-         {\PassOptionsToPackage{euler-digits}{eulervm}%
-         \RequirePackage{eulervm}} % Euler math fonts
-         {\relax}
-   }
-
-       \ifthenelse{\boolean{ct@eulerchapternumbers}}% font for the chapter numbers
-          {\DeclareFixedFont{\chapterNumber}{U}{eur}{b}{n}{100}}%
-          {\DeclareFixedFont{\chapterNumber}{T1}{pplj}{m}{n}{100}}%
-         %{\newfont{\chapterNumber}{eurb10 scaled 7000}}%
-         %{\newfont{\chapterNumber}{pplr9d scaled 7000}}
-         % Euler eurb10 / Palatino OSF pplr9d / Palatino SC pplrc9d
-         % Latin Modern cork-lmr10 / Minion MinionPro-Regular-osf-t1
-         % (MinionPro-SemiboldCapt-osf-t1 MinionPro-SemiboldDisp-osf-t1)
+\ifthenelse{\boolean{ct@eulerchapternumbers}}% font for the chapter numbers
+  {\DeclareFixedFont{\chapterNumber}{U}{eur}{b}{n}{100}}%
+  {\DeclareFixedFont{\chapterNumber}{T1}{pplj}{m}{n}{100}}%
+ %{\newfont{\chapterNumber}{eurb10 scaled 7000}}%
+ %{\newfont{\chapterNumber}{pplr9d scaled 7000}}
+ %Euler eurb10 / Palatino OSF pplr9d / Palatino SC pplrc9d
+ %Latin Modern cork-lmr10 / Minion MinionPro-Regular-osf-t1
+ %(MinionPro-SemiboldCapt-osf-t1 MinionPro-SemiboldDisp-osf-t1)
 
 
 
@@ -289,6 +284,7 @@
 % kpfonts 10pt:
 % kpfonts 11pt:
 % kpfonts 12pt:
+
 
 % ********************************************************************
 % Own Stuff

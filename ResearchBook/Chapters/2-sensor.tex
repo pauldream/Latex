@@ -1,7 +1,7 @@
 % !TEX root = ../ResearchBook.tex
 
 \chapter{RFL with Facility Combinations: Reliable Sensor Deployment for Positioning/Surveillance via Trilateration}\label{chap:sensor}
-\chaptermark{RFL with Facility Combinations: Sensor}
+\chaptermark{RFL with Facility Combinations: Sensor} % short chapter name
 
 In this chapter, we incorporate the impacts of sensor disruptions into a reliable sensor deployment framework by extending the ideas of assigning backup sensors as well as correlation decomposition via supporting stations. 
 
@@ -49,8 +49,12 @@ This sensor location problem (SLP) can now be formulated as the following mixed-
   This completes the proof.
 \end{proof}
 
+
+
 \section{Solution Algorithm}\label{sensor:algorithm}
 \subsection{Lagrangian Relaxation}\label{sensor:lagrangian}
+
+\begin{theo}
 In (LSLP), the sensor location variables $\mathbf{X}$ are correlated with the sensor level assignment variables $\mathbf{Z}$ by constraints \eqref{eqn:opt-b}.
 \begin{subequations}
   \begin{align}
@@ -58,7 +62,7 @@ In (LSLP), the sensor location variables $\mathbf{X}$ are correlated with the se
     \text{s.t.} & \quad \eqref{eqn:opt-b} - \eqref{eqn:opt-c}. \nonumber
   \end{align}
 \end{subequations}
-
+\end{theo}
 
 In this way, a very large portion of the district options is eliminated from the initial set. The pseudo-code for filtering the district options is summarized as Algorithm \ref{alg:districtgenerate}.
 
@@ -96,6 +100,7 @@ In this way, a very large portion of the district options is eliminated from the
     \RETURN{ newHeap}
   \end{algorithmic}
 \end{algorithm}
+
 
 
 \section{Numerical Examples}\label{sensor:numerical}
